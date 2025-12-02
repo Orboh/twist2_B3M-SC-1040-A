@@ -6,6 +6,9 @@ By Yanjie Ze, Siheng Zhao, Weizhuo Wang, Angjoo Kanazawa†, Rocky Duan†, Piet
 [[arXiv]](https://arxiv.org/abs/2511.02832)
 [[Video]](https://youtu.be/lTtEvI0kUfo)
 
+![Banner for TWIST](./assets/TWIST2.png)
+
+
 # News
 - **2025-12-02**. TWIST2 is fully open-sourced now. Give it a star on GitHub!
 - **2025-11-05**. TWIST2 is released. Full code will be released within 1 month (mostly ready and under the internal process). Please stay tuned.
