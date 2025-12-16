@@ -30,6 +30,8 @@ By Yanjie Ze, Siheng Zhao, Weizhuo Wang, Angjoo Kanazawa†, Rocky Duan†, Piet
 
 # Installation
 We will have two conda environments for TWIST2. One is called `twist2`, which can be used for controller training, controller deployment, and teleop data collection. The other is called `gmr`, which can be used for online motion retargeting. This is because isaacgym requires python 3.8, but newest mujoco requires python 3.10.
+＃PC
+Im using Ubuntsu22.04(I can use Issac GYM)
 
 **1**. Create conda environment:
 ```bash
