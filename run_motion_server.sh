@@ -12,6 +12,7 @@ cd deploy_real
 redis_ip="localhost"
 # this is my unitree g1's ip in wifi
 # redis_ip="192.168.110.24"
+export LD_LIBRARY_PATH="$CONDA_PREFIX/lib:$LD_LIBRARY_PATH"
 
 
 # Run the motion server

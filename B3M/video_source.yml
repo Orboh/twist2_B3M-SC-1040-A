@@ -1,0 +1,15 @@
+# XRoboToolkit Unity Client Video Source Configuration
+# PICO VR用のビデオソース設定
+
+# PCのIPアドレスとポート番号を指定
+# OrinVideoSender用の設定
+
+# PCのIPアドレス: 192.168.50.37
+# ポート: 12345（Unity Clientのデフォルト）
+
+video_source: "tcp://192.168.50.37:12345"
+
+# 注意事項：
+# - PCとPICO VRは同じネットワークに接続すること
+# - ファイアウォールでポート12345を開放すること
+# - このファイルをPICO VRに転送する必要があります
