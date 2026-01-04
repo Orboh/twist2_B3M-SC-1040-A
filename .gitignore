@@ -75,3 +75,10 @@ TWIST2-clean/
 unitree_sdk2/
 
 twist2_demonstration/
+# XRoboToolkit-RobotVision-PC (external git repository)
+XRoboToolkit-RobotVision-PC/
+
+# Build artifacts and binaries
+*.apk
+*.mp4
+2026のビルドトライ/
