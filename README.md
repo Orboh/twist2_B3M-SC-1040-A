@@ -294,6 +294,68 @@ You should be able to
 7) run the ZED streaming script
 all in this GUI. This GUI is also what I use for data collection and teleoperation.
 
+Neckのテレオペ実行方法
+
+1. パーミッション確認
+
+sudo chmod 666 /dev/ttyUSB0
+
+2. PICO VRを接続
+
+PICO VRヘッドセットをPCに接続し、XRoboToolkit APPを起動
+
+3. プログラム実行
+
+cd /home/kota-ueda/TWIST2/B3M
+
+# twist2環境で実行
+conda activate twist2
+python b3m_head_controller_twist2.py
+
+ZED miniのストリーミング
+## ストリーミング手順
+
+### Step 1: Pico側の準備
+
+1. **XRoboToolkit Unity Appを起動**
+- Picoのライブラリから「XRoboToolkit」を選択
+
+2. **カメラソースを選択**
+- **ZEDMINI** を選択（重要: PICO4Uではない）
+
+3. **待ち受け開始**
+- **Listen** ボタンをクリック
+- ポート12345で待ち受け状態になる
+
+### Step 2: PC側の実行
+
+ターミナルで以下のコマンドを実行：
+
+```bash
+cd ~/TWIST2
+
+XRoboToolkit-RobotVision-PC/VideoTransferPC/RobotVisionTest/RobotVisionConsole \
+--tcp-camera c \
+--ip 192.168.50.232 \
+--port 12345 \
+--camera 0 \
+--width 1280 \
+--height 720 \
+--fps 30 \
+--bitrate 8000000
+```
+
+**パラメータの説明：**
+- `--ip`: PicoのIPアドレス
+- `--port`: 通信ポート（デフォルト: 12345）
+- `--width 1280`: カメラの幅（SIDE_BY_SIDEで2560になる）
+- `--height 720`: カメラの高さ
+- `--fps 30`: フレームレート（安定性のため30推奨）
+- `--bitrate 8000000`: ビットレート（8Mbps）
+
+
+
+
 
 # Citation and Contact
 If you find this work useful, please cite:
