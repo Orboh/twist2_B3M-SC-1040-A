@@ -105,6 +105,60 @@ class B3MController:
         txCmd.append(sum(txCmd) & 0xff)
         self.ser.write(bytes(txCmd))
 
+    def read_position(self, servo_id, debug=False):
+        """
+        モーターの現在位置を読み取る（度単位）
+
+        Args:
+            servo_id: モーターID (0 or 1)
+            debug: デバッグ情報を表示
+
+        Returns:
+            float: 現在位置（度）、エラー時はNone
+        """
+        # シリアルバッファをクリア
+        self.ser.reset_input_buffer()
+        self.ser.reset_output_buffer()
+
+        # 位置読み取りコマンド（レジスタ0x2C-0x2D: 現在位置）
+        # 注意: 0x2Aは目標位置、0x2Cが現在位置！
+        # フォーマット: SIZE, COMMAND, OPTION, ID, ADDRESS, LENGTH, SUM
+        txCmd = [0x07, 0x03, 0x00, servo_id, 0x2C, 0x02]
+        txCmd.append(sum(txCmd) & 0xff)
+
+        if debug:
+            print(f"[DEBUG] Sending read command: {[hex(x) for x in txCmd]}")
+
+        self.ser.write(bytes(txCmd))
+        time.sleep(0.05)  # 応答待ちを長めに
+
+        response = self.ser.read(12)  # より多くのバイトを読む
+
+        if debug:
+            print(f"[DEBUG] Response length: {len(response)}")
+            if len(response) > 0:
+                print(f"[DEBUG] Response data: {[hex(x) for x in response]}")
+
+        # READコマンドの応答は7バイト (SIZE, COMMAND, STATUS, ID, DATA1, DATA2, SUM)
+        if len(response) >= 7:
+            # 位置データは4,5バイト目（インデックス0始まり）（リトルエンディアン、符号付き16bit）
+            position_raw = response[4] | (response[5] << 8)
+            # 符号付き16bitに変換
+            if position_raw >= 32768:
+                position_raw -= 65536
+            # 0.01度単位から度に変換
+            position_deg = position_raw / 100.0
+
+            if debug:
+                print(f"[DEBUG] Position raw: {position_raw}, Position deg: {position_deg:.2f}°")
+
+            return position_deg
+        else:
+            print(f"⚠️ Failed to read position from motor ID {servo_id} (response length: {len(response)})")
+            if len(response) > 0:
+                print(f"   Response: {[hex(x) for x in response]}")
+            return None
+
     def close(self):
         """シリアル接続を閉じる"""
         if self.ser and self.ser.is_open:

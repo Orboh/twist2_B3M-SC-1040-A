@@ -111,6 +111,10 @@ class B3MHeadControllerTWIST2:
         # Scale factor
         self.scale = 1.5
 
+        # Calibration offsets
+        self.yaw_offset = 0.0
+        self.pitch_offset = 0.0
+
         # Debug mode
         self.debug = False
 
@@ -130,6 +134,87 @@ class B3MHeadControllerTWIST2:
         self.controller.set_position(self.PITCH_MOTOR_ID, 0)
 
         print("✅ B3M motors initialized and centered\n")
+
+    def calibrate(self):
+        """
+        キャリブレーションモード
+        現在のモーター位置を0度基準として設定
+        """
+        print("\n" + "=" * 60)
+        print("  🎯 CALIBRATION MODE")
+        print("=" * 60)
+        print("\n手順:")
+        print("1. 現在のモーター位置を確認します（トルクONのまま）")
+        print("2. 手動でロボットの首を物理的に0度の位置に合わせてください")
+        print("   （モーターを手で優しく動かしてください）")
+        print("3. 位置が決まったらEnterキーを押してください\n")
+
+        # まず現在位置を読み取ってテスト（トルクON状態）
+        print("📏 テスト: トルクON状態で位置読み取り...")
+        test_yaw = self.controller.read_position(self.YAW_MOTOR_ID, debug=True)
+        test_pitch = self.controller.read_position(self.PITCH_MOTOR_ID, debug=True)
+
+        if test_yaw is not None:
+            print(f"✅ 現在のYaw位置: {test_yaw:+.2f}°")
+        if test_pitch is not None:
+            print(f"✅ 現在のPitch位置: {test_pitch:+.2f}°")
+        print()
+
+        input("首を0度の位置に合わせたらEnterキーを押してください...")
+
+        # 現在位置を読み取り（キャリブレーション基準）
+        print("\n📏 0度基準位置を読み取り中...")
+        print("\n--- Yaw Motor (ID 0) ---")
+        yaw_current = self.controller.read_position(self.YAW_MOTOR_ID, debug=True)
+        print("\n--- Pitch Motor (ID 1) ---")
+        pitch_current = self.controller.read_position(self.PITCH_MOTOR_ID, debug=True)
+
+        if yaw_current is not None and pitch_current is not None:
+            self.yaw_offset = yaw_current
+            self.pitch_offset = pitch_current
+
+            print(f"\n✅ キャリブレーション完了!")
+            print(f"   Yaw offset: {self.yaw_offset:+.2f}°")
+            print(f"   Pitch offset: {self.pitch_offset:+.2f}°")
+            print(f"\n   この位置を0度基準として記録しました。")
+
+            # オフセットをファイルに保存
+            self._save_calibration()
+        else:
+            print("\n❌ キャリブレーション失敗")
+            print("   モーターから位置情報を読み取れませんでした。")
+            print("   B3Mモーターの通信を確認してください。")
+            self.yaw_offset = 0.0
+            self.pitch_offset = 0.0
+
+        print()
+
+    def _save_calibration(self):
+        """キャリブレーションデータをファイルに保存"""
+        try:
+            with open("b3m_calibration.txt", "w") as f:
+                f.write(f"{self.yaw_offset}\n")
+                f.write(f"{self.pitch_offset}\n")
+            print("💾 キャリブレーションデータを保存しました (b3m_calibration.txt)")
+        except Exception as e:
+            print(f"⚠️ 保存失敗: {e}")
+
+    def _load_calibration(self):
+        """キャリブレーションデータをファイルから読み込み"""
+        try:
+            with open("b3m_calibration.txt", "r") as f:
+                self.yaw_offset = float(f.readline().strip())
+                self.pitch_offset = float(f.readline().strip())
+            print(f"📂 キャリブレーションデータを読み込みました")
+            print(f"   Yaw offset: {self.yaw_offset:+.2f}°")
+            print(f"   Pitch offset: {self.pitch_offset:+.2f}°")
+            return True
+        except FileNotFoundError:
+            print("📂 キャリブレーションファイルが見つかりません（初回起動またはキャリブレーション未実施）")
+            return False
+        except Exception as e:
+            print(f"⚠️ 読み込み失敗: {e}")
+            return False
 
     def get_neck_angles_from_headset(self):
         """
@@ -195,24 +280,30 @@ class B3MHeadControllerTWIST2:
 
     def set_neck_position(self, yaw_deg, pitch_deg):
         """
-        Set neck position.
+        Set neck position with calibration offset applied.
 
         Args:
-            yaw_deg: Yaw angle in degrees
-            pitch_deg: Pitch angle in degrees
+            yaw_deg: Yaw angle in degrees (before calibration)
+            pitch_deg: Pitch angle in degrees (before calibration)
         """
         try:
-            # 🔍 デバッグ: モーターに送信する値を表示,yaw_degをマイナスにしてみる
-            if self.debug:
-                print(f"   >>> Sending to motors: Yaw(ID={self.YAW_MOTOR_ID})={yaw_deg:.1f}°, Pitch(ID={self.PITCH_MOTOR_ID})={pitch_deg:.1f}°")
+            # オフセットを適用（キャリブレーション後の基準からの角度）
+            yaw_with_offset = -yaw_deg - self.yaw_offset
+            pitch_with_offset = -pitch_deg - self.pitch_offset
 
-            self.controller.set_position(self.YAW_MOTOR_ID, -yaw_deg)
+            # 🔍 デバッグ: モーターに送信する値を表示
+            if self.debug:
+                print(f"   >>> Before offset: Yaw={-yaw_deg:.1f}°, Pitch={-pitch_deg:.1f}°")
+                print(f"   >>> Offset: Yaw={self.yaw_offset:+.1f}°, Pitch={self.pitch_offset:+.1f}°")
+                print(f"   >>> Sending to motors: Yaw(ID={self.YAW_MOTOR_ID})={yaw_with_offset:.1f}°, "
+                      f"Pitch(ID={self.PITCH_MOTOR_ID})={pitch_with_offset:.1f}°")
+
+            self.controller.set_position(self.YAW_MOTOR_ID, yaw_with_offset)
 
             # デイジーチェーン通信のため、コマンド間に短い遅延を追加（1ms）
             time.sleep(0.001)
-            
-            # ピッチもマイナスにしてみる
-            self.controller.set_position(self.PITCH_MOTOR_ID, -pitch_deg)
+
+            self.controller.set_position(self.PITCH_MOTOR_ID, pitch_with_offset)
             return True
         except Exception as e:
             print(f"⚠️ Error setting position: {e}")
@@ -289,6 +380,8 @@ if __name__ == "__main__":
                        help="Neck movement scale factor")
     parser.add_argument("--debug", action="store_true",
                        help="Enable debug mode (show detailed data)")
+    parser.add_argument("--calibrate", action="store_true",
+                       help="Run calibration mode before starting")
 
     args = parser.parse_args()
 
@@ -299,6 +392,13 @@ if __name__ == "__main__":
     )
     controller.scale = args.scale
     controller.debug = args.debug
+
+    # キャリブレーション実行
+    if args.calibrate:
+        controller.calibrate()
+    else:
+        # 保存されたキャリブレーションを読み込み
+        controller._load_calibration()
 
     if args.debug:
         print("\n🔍 DEBUG MODE ENABLED")

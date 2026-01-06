@@ -82,3 +82,6 @@ XRoboToolkit-RobotVision-PC/
 *.apk
 *.mp4
 2026のビルドトライ/
+
+# B3M calibration data (machine-specific)
+b3m_calibration.txt
