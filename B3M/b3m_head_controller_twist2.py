@@ -202,16 +202,17 @@ class B3MHeadControllerTWIST2:
             pitch_deg: Pitch angle in degrees
         """
         try:
-            # 🔍 デバッグ: モーターに送信する値を表示
+            # 🔍 デバッグ: モーターに送信する値を表示,yaw_degをマイナスにしてみる
             if self.debug:
                 print(f"   >>> Sending to motors: Yaw(ID={self.YAW_MOTOR_ID})={yaw_deg:.1f}°, Pitch(ID={self.PITCH_MOTOR_ID})={pitch_deg:.1f}°")
 
-            self.controller.set_position(self.YAW_MOTOR_ID, yaw_deg)
+            self.controller.set_position(self.YAW_MOTOR_ID, -yaw_deg)
 
             # デイジーチェーン通信のため、コマンド間に短い遅延を追加（1ms）
             time.sleep(0.001)
-
-            self.controller.set_position(self.PITCH_MOTOR_ID, pitch_deg)
+            
+            # ピッチもマイナスにしてみる
+            self.controller.set_position(self.PITCH_MOTOR_ID, -pitch_deg)
             return True
         except Exception as e:
             print(f"⚠️ Error setting position: {e}")
