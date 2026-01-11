@@ -64,6 +64,7 @@ DEFAULT_MIMIC_OBS = {
     "unitree_g1": DEFAULT_MIMIC_OBS_G1,
     "unitree_g1_mixed_mode": DEFAULT_MIMIC_OBS_G1_MIXED_MODE,
     "unitree_g1_with_hands": DEFAULT_MIMIC_OBS_G1,
+    "amazing_hand": DEFAULT_MIMIC_OBS_G1,  # Use same as G1 with hands
     "booster_t1": DEFAULT_MIMIC_OBS_T1,
     "stanford_toddy": DEFAULT_MIMIC_OBS_TODDY,
 }
@@ -139,7 +140,7 @@ DEFAULT_HAND_POSE = {
             "close": np.array([0, 0]), # parallel gripper
         },
     },
-    "stanford_toddy": 
+    "stanford_toddy":
     {
         "left": {
             "open": np.array([0, 0]), # parallel gripper
@@ -148,6 +149,21 @@ DEFAULT_HAND_POSE = {
         "right": {
             "open": np.array([0, 0]), # parallel gripper
             "close": np.array([0, 0]), # parallel gripper
+        },
+    },
+    "amazing_hand":
+    {
+        "left": {
+            # 8 DOF: [Index_0, Index_1, Middle_0, Middle_1, Ring_0, Ring_1, Thumb_0, Thumb_1]
+            # Open pose: -35 to +35 degrees → -0.61 to +0.61 radians
+            "open": np.array([-0.61, 0.61, -0.61, 0.61, -0.61, 0.61, -0.61, 0.61]),
+            # Close pose: 90 to -90 degrees → 1.57 to -1.57 radians
+            "close": np.array([1.57, -1.57, 1.57, -1.57, 1.57, -1.57, 1.57, -1.57]),
+        },
+        "right": {
+            # 8 DOF: [Index_0, Index_1, Middle_0, Middle_1, Ring_0, Ring_1, Thumb_0, Thumb_1]
+            "open": np.array([-0.61, 0.61, -0.61, 0.61, -0.61, 0.61, -0.61, 0.61]),
+            "close": np.array([1.57, -1.57, 1.57, -1.57, 1.57, -1.57, 1.57, -1.57]),
         },
     },
 }

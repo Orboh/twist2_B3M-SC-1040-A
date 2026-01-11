@@ -116,3 +116,46 @@ b3m_head_controller_twist2.py を作成しました。このプログラムは�
 
   # 4. 確認（1になっていればOK）
   cat /sys/bus/usb-serial/devices/ttyUSB0/latency_timer
+
+
+キャリブレーション
+python b3m_head_controller_twist2.py --calibrate
+
+
+● 問題が特定できました！Kondo Kagaku RS485 USB/Serial Converterは認識されていますが、適切なドライバーがロードされていないため/dev/ttyUSB0デバイスが作成されていません。
+
+  解決方法
+
+  1. USBシリアルドライバーをロードする
+
+  ターミナルで以下のコマンドを実行してください：
+
+  # FTDIドライバーをロード（Kondo Kagakuデバイス用）
+  sudo modprobe ftdi_sio
+
+  # ベンダーIDとプロダクトIDを手動で追加
+  echo "165c 0009" | sudo tee /sys/bus/usb-serial/drivers/ftdi_sio/new_id
+
+  2. デバイスが作成されたか確認
+
+  ls -la /dev/ttyUSB*
+
+  成功すると以下のように表示されます：
+  crw-rw---- 1 root dialout 188, 0 Jan 6 17:00 /dev/ttyUSB0
+
+  3. パーミッションを設定（必要な場合）
+
+  sudo chmod 666 /dev/ttyUSB0
+
+  または、永続的な解決策として：
+
+  # dialoutグループに所属しているか確認
+  groups
+  # dialoutがあれば、ログアウト→ログインで反映されます
+
+  4. B3Mスクリプトを実行
+
+  cd /home/kota-ueda/TWIST2/B3M
+  conda activate twist2
+  python b3m_head_controller_twist2.py
+

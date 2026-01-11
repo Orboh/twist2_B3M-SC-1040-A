@@ -94,12 +94,15 @@ class RealTimePolicyController(object):
     Real robot controller for TWIST2 policy.
     Based on server_low_level_g1_real.py but adapted for TWIST2 architecture.
     """
-    def __init__(self, 
+    def __init__(self,
                  policy_path,
                  config_path,
                  device='cuda',
                  net='eno1',
                  use_hand=False,
+                 hand_type='dex3_1',
+                 serial_port='/dev/ttyUSB0',
+                 baudrate=1000000,
                  record_proprio=False,
                  smooth_body=0.0):
         self.redis_client = None
@@ -109,12 +112,33 @@ class RealTimePolicyController(object):
         except Exception as e:
             print(f"Error connecting to Redis: {e}")
             exit()
-       
+
         self.config = Config(config_path)
         self.env = G1RealWorldEnv(net=net, config=self.config)
         self.use_hand = use_hand
+        self.hand_type = hand_type
+
         if use_hand:
-            self.hand_ctrl = Dex3_1_Controller(net, re_init=False)
+            if hand_type == 'dex3_1':
+                from robot_control.dex_hand_wrapper import Dex3_1_Controller
+                self.hand_ctrl = Dex3_1_Controller(net, re_init=False)
+                self.hand_dof = 7
+                print(f"✅ Using Dex3_1 hand (7 DOF)")
+
+            elif hand_type == 'amazing_hand':
+                from robot_control.amazing_hand_wrapper import AmazingHandController
+                self.hand_ctrl = AmazingHandController(
+                    serial_port=serial_port,
+                    baudrate=baudrate,
+                    re_init=False
+                )
+                self.hand_dof = 8
+                print(f"✅ Using AmazingHand (8 DOF, port: {serial_port})")
+
+            else:
+                raise ValueError(f"Unknown hand_type: {hand_type}")
+        else:
+            self.hand_dof = 7  # Default for compatibility
 
         self.device = device
         self.policy = load_onnx_policy(policy_path, device)
@@ -247,9 +271,28 @@ class RealTimePolicyController(object):
                 if self.use_hand:
                     action_hand_left = np.array(action_hand_left, dtype=np.float32)
                     action_hand_right = np.array(action_hand_right, dtype=np.float32)
+
+                    # Validate DOF size and adjust if needed
+                    if len(action_hand_left) != self.hand_dof:
+                        print(f"⚠️ Left hand DOF mismatch: expected {self.hand_dof}, got {len(action_hand_left)}")
+                        if len(action_hand_left) < self.hand_dof:
+                            # Pad with zeros
+                            action_hand_left = np.pad(action_hand_left, (0, self.hand_dof - len(action_hand_left)))
+                        else:
+                            # Truncate
+                            action_hand_left = action_hand_left[:self.hand_dof]
+
+                    if len(action_hand_right) != self.hand_dof:
+                        print(f"⚠️ Right hand DOF mismatch: expected {self.hand_dof}, got {len(action_hand_right)}")
+                        if len(action_hand_right) < self.hand_dof:
+                            # Pad with zeros
+                            action_hand_right = np.pad(action_hand_right, (0, self.hand_dof - len(action_hand_right)))
+                        else:
+                            # Truncate
+                            action_hand_right = action_hand_right[:self.hand_dof]
                 else:
-                    action_hand_left = np.zeros(7, dtype=np.float32)
-                    action_hand_right = np.zeros(7, dtype=np.float32)
+                    action_hand_left = np.zeros(self.hand_dof, dtype=np.float32)
+                    action_hand_right = np.zeros(self.hand_dof, dtype=np.float32)
 
                 obs_full = np.concatenate([action_mimic, obs_proprio])
                 
@@ -334,6 +377,13 @@ def main():
                         help='Network interface for robot communication')
     parser.add_argument('--use_hand', action='store_true',
                         help='Enable hand control')
+    parser.add_argument('--hand_type', type=str, default='dex3_1',
+                        choices=['dex3_1', 'amazing_hand'],
+                        help='Type of hand: dex3_1 (Unitree G1) or amazing_hand')
+    parser.add_argument('--serial_port', type=str, default='/dev/ttyUSB0',
+                        help='Serial port for AmazingHand (e.g., /dev/ttyUSB0)')
+    parser.add_argument('--baudrate', type=int, default=1000000,
+                        help='Baudrate for AmazingHand serial communication')
     parser.add_argument('--record_proprio', action='store_true',
                         help='Record proprioceptive data')
     parser.add_argument('--smooth_body', type=float, default=0.0,
@@ -375,6 +425,9 @@ def main():
         device=args.device,
         net=args.net,
         use_hand=args.use_hand,
+        hand_type=args.hand_type,
+        serial_port=args.serial_port,
+        baudrate=args.baudrate,
         record_proprio=args.record_proprio,
         smooth_body=args.smooth_body,
     )

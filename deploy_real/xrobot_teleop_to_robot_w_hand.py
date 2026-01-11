@@ -364,8 +364,10 @@ class XRobotTeleopToRobot:
     def __init__(self, args):
         self.args = args
         self.robot_name = args.robot
-        self.xml_file = ROBOT_XML_DICT[args.robot]
-        self.robot_base = ROBOT_BASE_DICT[args.robot]
+        # Use unitree_g1_with_hands MuJoCo model for amazing_hand (hand control uses robot_name)
+        robot_for_xml = "unitree_g1_with_hands" if args.robot == "amazing_hand" else args.robot
+        self.xml_file = ROBOT_XML_DICT[robot_for_xml]
+        self.robot_base = ROBOT_BASE_DICT[robot_for_xml]
         
         print(f"Pinch mode: {self.args.pinch_mode}")
         # Initialize state tracking
@@ -778,7 +780,7 @@ def parse_arguments():
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "--robot",
-        choices=["unitree_g1", "unitree_g1_with_hands"],
+        choices=["unitree_g1", "unitree_g1_with_hands", "amazing_hand"],
         default="unitree_g1",
     )
     parser.add_argument(
