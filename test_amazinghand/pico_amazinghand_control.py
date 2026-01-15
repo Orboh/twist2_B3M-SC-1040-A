@@ -14,7 +14,8 @@ import time
 import json
 
 # Add TWIST2 to path
-sys.path.insert(0, '/home/kota-ueda/TWIST2/deploy_real')
+twist2_path = os.path.join(os.path.expanduser('~'), 'TWIST2', 'deploy_real')
+sys.path.insert(0, twist2_path)
 
 import redis
 import numpy as np

@@ -1,6 +1,11 @@
 import numpy as np
-import torch
-from scipy.spatial.transform import Rotation as R
+# import torch  # Removed for Jetson compatibility
+
+# Lazy import scipy to avoid compatibility issues on Jetson
+try:
+    from scipy.spatial.transform import Rotation as R
+except (ImportError, AttributeError):
+    R = None  # scipy functions will fail if called
 
 
 def quatToEuler(quat):

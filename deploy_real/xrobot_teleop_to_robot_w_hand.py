@@ -504,7 +504,13 @@ class XRobotTeleopToRobot:
                 
         # Update the simulation
         if qpos is not None:
-            self.data.qpos[:] = qpos.copy()
+            # Handle size mismatch between GMR output and MuJoCo model (e.g., with hands)
+            if len(qpos) < self.model.nq:
+                padded_qpos = np.zeros(self.model.nq)
+                padded_qpos[:len(qpos)] = qpos
+                self.data.qpos[:] = padded_qpos
+            else:
+                self.data.qpos[:] = qpos.copy()
             mj.mj_forward(self.model, self.data)
             
             # Camera follow the pelvis
@@ -738,6 +744,13 @@ class XRobotTeleopToRobot:
                 
                 # Update state machine
                 if controller_data is not None:
+                    # デバッグ: コントローラーデータを表示（最初の100回のみ）
+                    if not hasattr(self, '_debug_count'):
+                        self._debug_count = 0
+                    if self._debug_count < 5:
+                        print(f"[DEBUG] Controller data: {controller_data}")
+                        self._debug_count += 1
+
                     self.state_machine.update(controller_data)
                     self.send_controller_data_to_redis(controller_data)
                 

@@ -4,7 +4,7 @@ import random
 import time
 import json
 import numpy as np
-import torch
+# import torch  # Removed for Jetson compatibility
 import redis
 from collections import deque
 # from robot_control.common.remote_controller import KeyMap
@@ -30,16 +30,14 @@ class OnnxPolicyWrapper:
         self.input_name = input_name
         self.output_index = output_index
 
-    def __call__(self, obs_tensor: torch.Tensor) -> torch.Tensor:
-        if isinstance(obs_tensor, torch.Tensor):
-            obs_np = obs_tensor.detach().cpu().numpy()
-        else:
-            obs_np = np.asarray(obs_tensor, dtype=np.float32)
+    def __call__(self, obs_array: np.ndarray) -> np.ndarray:
+        """Run inference with numpy arrays (torch-free for Jetson compatibility)."""
+        obs_np = np.asarray(obs_array, dtype=np.float32)
         outputs = self.session.run(None, {self.input_name: obs_np})
         result = outputs[self.output_index]
         if not isinstance(result, np.ndarray):
             result = np.asarray(result, dtype=np.float32)
-        return torch.from_numpy(result.astype(np.float32))
+        return result.astype(np.float32)
 
 
 class EMASmoother:
@@ -104,10 +102,11 @@ class RealTimePolicyController(object):
                  serial_port='/dev/ttyUSB0',
                  baudrate=1000000,
                  record_proprio=False,
-                 smooth_body=0.0):
+                 smooth_body=0.0,
+                 redis_ip='localhost'):
         self.redis_client = None
         try:
-            self.redis_client = redis.Redis(host='localhost', port=6379, db=0)
+            self.redis_client = redis.Redis(host=redis_ip, port=6379, db=0)
             self.redis_pipeline = self.redis_client.pipeline()
         except Exception as e:
             print(f"Error connecting to Redis: {e}")
@@ -124,7 +123,7 @@ class RealTimePolicyController(object):
                 self.hand_ctrl = Dex3_1_Controller(net, re_init=False)
                 self.hand_dof = 7
                 print(f"✅ Using Dex3_1 hand (7 DOF)")
-
+            #Amazing Handの追加
             elif hand_type == 'amazing_hand':
                 from robot_control.amazing_hand_wrapper import AmazingHandController
                 self.hand_ctrl = AmazingHandController(
@@ -305,9 +304,9 @@ class RealTimePolicyController(object):
                 
                 assert obs_buf.shape[0] == self.total_obs_size, f"Expected {self.total_obs_size} obs, got {obs_buf.shape[0]}"
                 
-                obs_tensor = torch.from_numpy(obs_buf).float().unsqueeze(0).to(self.device)
-                with torch.no_grad():
-                    raw_action = self.policy(obs_tensor).cpu().numpy().squeeze()
+                # Use numpy instead of torch for Jetson compatibility
+                obs_input = obs_buf.astype(np.float32)[np.newaxis, :]  # Add batch dimension
+                raw_action = self.policy(obs_input).squeeze()
                 
                 self.last_action = raw_action.copy()
 
@@ -388,7 +387,9 @@ def main():
                         help='Record proprioceptive data')
     parser.add_argument('--smooth_body', type=float, default=0.0,
                         help='Smoothing factor for body actions (0.0=no smoothing, 1.0=maximum smoothing)')
-    
+    parser.add_argument('--redis_ip', type=str, default='localhost',
+                        help='Redis server IP address (default: localhost)')
+
     args = parser.parse_args()
 
     
@@ -430,6 +431,7 @@ def main():
         baudrate=args.baudrate,
         record_proprio=args.record_proprio,
         smooth_body=args.smooth_body,
+        redis_ip=args.redis_ip,
     )
     
     controller.run()
