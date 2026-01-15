@@ -1,20 +1,17 @@
 #!/bin/bash
 #
-# B3M Neck Controller 起動スクリプト (Redis経由)
-# Usage:
-#   bash neck_control.sh                    # デフォルトIP (192.168.123.222)
-#   bash neck_control.sh 192.168.123.100    # IPを指定
+# B3M Neck Calibration Script
+# ネックの0度位置を設定するキャリブレーション専用スクリプト
+# Usage: bash calibrate.sh
 #
 
 # デフォルト設定
-REDIS_IP="${1:-192.168.123.222}"  # PCのIPアドレス（引数で変更可能）
 SERIAL_PORT="/dev/ttyUSB0"
 BAUDRATE=1500000
 
 echo "============================================================"
-echo "  B3M Neck Controller 起動スクリプト"
+echo "  🎯 B3M Neck Calibration"
 echo "============================================================"
-echo "Redis IP: ${REDIS_IP}"
 echo "Serial port: ${SERIAL_PORT}"
 echo ""
 
@@ -72,18 +69,14 @@ fi
 
 echo ""
 echo "============================================================"
-echo "  B3M Neck Controller を起動します"
+echo "  🎯 B3M Neck Calibration を開始します"
 echo "============================================================"
-echo "🎮 Redis経由でネック制御を開始します"
-echo "   (PC側でteleop.shを実行してください)"
-echo "   Redis IP: ${REDIS_IP}"
 echo ""
 
-# Step 6: B3M Neck Controllerを起動
+# Step 6: B3M Calibrationを実行
 SCRIPT_DIR=$(dirname $(realpath $0))
 cd ${SCRIPT_DIR}
 
-python b3m_neck_controller_redis.py \
-    --redis_ip ${REDIS_IP} \
+python b3m_calibrate.py \
     --port ${SERIAL_PORT} \
     --baudrate ${BAUDRATE}
