@@ -364,8 +364,9 @@ class XRobotTeleopToRobot:
     def __init__(self, args):
         self.args = args
         self.robot_name = args.robot
-        # Use unitree_g1_with_hands MuJoCo model for amazing_hand (hand control uses robot_name)
-        robot_for_xml = "unitree_g1_with_hands" if args.robot == "amazing_hand" else args.robot
+        # For amazing_hand: use unitree_g1 model for visualization (shows Unitree official hand)
+        # Real robot uses AmazingHand (16DOF), but visualization uses official hand (29DOF model)
+        robot_for_xml = "unitree_g1" if args.robot == "amazing_hand" else args.robot
         self.xml_file = ROBOT_XML_DICT[robot_for_xml]
         self.robot_base = ROBOT_BASE_DICT[robot_for_xml]
         
@@ -504,7 +505,9 @@ class XRobotTeleopToRobot:
                 
         # Update the simulation
         if qpos is not None:
-            # Handle size mismatch between GMR output and MuJoCo model (e.g., with hands)
+            # Handle size mismatch between GMR output and MuJoCo model
+            # Note: For amazing_hand, we now use unitree_g1 model (36 qpos) which matches GMR output
+            # This padding is kept for compatibility with other robot configurations
             if len(qpos) < self.model.nq:
                 padded_qpos = np.zeros(self.model.nq)
                 padded_qpos[:len(qpos)] = qpos

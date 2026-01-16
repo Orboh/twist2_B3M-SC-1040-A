@@ -11,12 +11,13 @@ import numpy as np
 from scipy.spatial.transform import Rotation as R
 
 # XRoboToolkit SDK（TWIST2に含まれる）
+# キャリブレーションモードでは不要
 try:
     import xrobotoolkit_sdk as xrt
+    XRT_AVAILABLE = True
 except ImportError:
-    print("❌ Error: xrobotoolkit_sdk not found")
-    print("Please install: pip install xrobotoolkit_sdk")
-    exit(1)
+    xrt = None
+    XRT_AVAILABLE = False
 
 # B3M Controller
 from b3m_controller import B3MController
@@ -86,16 +87,16 @@ class B3MHeadControllerTWIST2:
         print("=" * 60)
         print("\n🚀 Initializing...")
 
-        # XRoboToolkit SDK初期化
-        try:
-            xrt.init()
-            print("✅ XRoboToolkit SDK initialized (PICO VR connected)")
-        except Exception as e:
-            print(f"❌ Failed to initialize XRoboToolkit: {e}")
-            print("Please make sure:")
-            print("  1. PICO VR headset is connected to PC")
-            print("  2. XRoboToolkit APP is running on PICO VR")
-            raise
+        # XRoboToolkit SDK初期化（キャリブレーションモードでは不要）
+        if XRT_AVAILABLE:
+            try:
+                xrt.init()
+                print("✅ XRoboToolkit SDK initialized (PICO VR connected)")
+            except Exception as e:
+                print(f"⚠️ Failed to initialize XRoboToolkit: {e}")
+                print("Note: XRoboToolkit is not required for calibration mode")
+        else:
+            print("ℹ️ XRoboToolkit SDK not available (OK for calibration mode)")
 
         # B3M controller初期化
         self.controller = B3MController(port, baudrate)
