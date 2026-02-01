@@ -128,8 +128,8 @@ class B3MNeckControllerRedis:
         """
         try:
             # Apply offset
-            yaw_with_offset = yaw_deg - self.yaw_offset
-            pitch_with_offset = pitch_deg - self.pitch_offset
+            yaw_with_offset = -yaw_deg - self.yaw_offset
+            pitch_with_offset = -pitch_deg - self.pitch_offset
 
             # Clamp to safe range
             yaw_with_offset = np.clip(yaw_with_offset, self.YAW_RANGE[0], self.YAW_RANGE[1])

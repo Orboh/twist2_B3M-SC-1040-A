@@ -18,15 +18,15 @@ echo "  - 1280x720 @ 30fps @ 8Mbps (good quality, stable)"
 echo "  - 2560x720 @ 30fps @ 12Mbps (stereo, stable)"
 echo "  - 2560x720 @ 60fps @ 16Mbps (stereo, high quality)"
 echo ""
-echo "Current setup: listening on 192.168.50.37:13579"
-echo "Video stream target: Pico at 192.168.50.232:12345"
+echo "Current setup: listening on 192.168.0.50:13579"
+echo "Video stream target: Pico at 192.168.0.96:12345"
 echo ""
 echo "========================================"
 echo ""
 
 # プレビューなしで起動（リソース削減）
 echo "Starting OrinVideoSender (no preview)..."
-./OrinVideoSender --listen 192.168.50.37:13579
+./OrinVideoSender --listen 192.168.0.50:13579
 
 # プレビューありで起動する場合は以下を使用:
-# ./OrinVideoSender --preview --listen 192.168.50.37:13579
+# ./OrinVideoSender --preview --listen 192.168.0.50:13579

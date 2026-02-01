@@ -4,10 +4,10 @@
 # PCのIPアドレスとポート番号を指定
 # OrinVideoSender用の設定
 
-# PCのIPアドレス: 192.168.50.37
+# PCのIPアドレス: 192.168.0.50
 # ポート: 12345（Unity Clientのデフォルト）
 
-video_source: "tcp://192.168.50.37:12345"
+video_source: "tcp://192.168.0.50:12345"
 
 # 注意事項：
 # - PCとPICO VRは同じネットワークに接続すること
