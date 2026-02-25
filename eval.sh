@@ -1,7 +1,7 @@
 
 # bash eval.sh 1002_twist2 cuda:1
 
-
+export LD_LIBRARY_PATH=/home/kota-ueda/miniconda3/envs/twist2/lib:$LD_LIBRARY_PATH
 
 # motion_file="/home/yanjieze/projects/g1_wbc/TWIST-dev/motion_data/v1_v2_v3_g1/0807_yanjie_walk_001.pkl"
 motion_file="/home/yanjieze/projects/g1_wbc/TWIST-dev/motion_data/twist1_to_twist2/transitions_walksideways_walkbackwards.pkl"

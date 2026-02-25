@@ -2,10 +2,10 @@
 source ~/miniconda3/bin/activate twist2
 
 SCRIPT_DIR=$(dirname $(realpath $0))
-ckpt_path=${SCRIPT_DIR}/assets/ckpts/twist2_1017_20k.onnx
+ckpt_path=${SCRIPT_DIR}/assets/ckpts/twist2_1017_25k.onnx
 
 # PC側のネットワークインターフェース（G1と接続）
-net=enx4c858aeb8f5a
+net=enx6c1ff771dc67
 
 cd deploy_real
 

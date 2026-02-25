@@ -62,10 +62,7 @@ def train(args):
         
     robot_type = args.task.split("_")[0]
     
-    try:
-        wandb.init(entity="far-wandb", project="twist", name=args.exptid, mode=mode, dir="../../logs")
-    except:
-        wandb.init(project="g1_mimic", name=args.exptid, mode=mode, dir="../../logs")
+    wandb.init(project="twist2", name=args.exptid, mode=mode, dir="../../logs")
     # wandb.save(LEGGED_GYM_ENVS_DIR + "/base/legged_robot_config.py", policy="now")
     # wandb.save(LEGGED_GYM_ENVS_DIR + "/base/legged_robot.py", policy="now")
     # wandb.save(LEGGED_GYM_ENVS_DIR + "/base/humanoid_config.py", policy="now")

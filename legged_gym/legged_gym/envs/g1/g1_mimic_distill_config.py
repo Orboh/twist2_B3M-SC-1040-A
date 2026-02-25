@@ -11,7 +11,7 @@ class G1MimicPrivCfg(HumanoidMimicCfg):
         tar_motion_steps = [1, 5, 10, 15, 20, 25, 30, 35, 40, 45,
                          50, 55, 60, 65, 70, 75, 80, 85, 90, 95,]
         
-        num_envs = 4096
+        num_envs = 512  # 上田PC用に変更（VRAM 8GB）元は4096
         num_actions = 29
         obs_type = 'priv' # 'student'
         n_priv_latent = 4 + 1 + 2*num_actions

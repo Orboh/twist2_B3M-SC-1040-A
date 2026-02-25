@@ -1,5 +1,5 @@
 # root_path: /home/yanjieze/projects/g1_wbc/TWIST-dev/motion_data/TWIST2_full
-root_path: /home/ANT.AMAZON.COM/yanjieze/lab42/src/FAR-TWIST/motion_data
+root_path: /home/kota-ueda/TWIST2/legged_gym/motion_data_configs/TWIST2_full
 motions:
 - file: OMOMO_g1_GMR/sub1_clothesstand_000.pkl
   weight: 1.0

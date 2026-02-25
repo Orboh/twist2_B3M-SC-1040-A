@@ -72,7 +72,7 @@ class G1MimicStuFutureCfg(G1MimicPrivCfg):
             only_apply_resistance_when_walking = True # Apply resistance forces against movement
     
     class motion(G1MimicPrivCfg.motion):
-        motion_file = f"{LEGGED_GYM_ROOT_DIR}/motion_data_configs/twist2_dataset.yaml"
+        motion_file = f"{LEGGED_GYM_ROOT_DIR}/motion_data_configs/twist2_dataset_small.yaml"  # 8GB VRAM用に縮小版（元: twist2_dataset.yaml）
         
         # Ensure motion curriculum is enabled for difficulty adaptation
         motion_curriculum = True

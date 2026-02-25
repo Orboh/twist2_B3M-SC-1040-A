@@ -10,7 +10,7 @@ cd deploy_real
 redis_ip="localhost"
 
 # the height (empirically) should be smaller than the actual human height, due to inaccuracy of the PICO estimation.
-actual_human_height=1.6
+actual_human_height=1.8
 python xrobot_teleop_to_robot_w_hand.py --robot amazing_hand \
              --actual_human_height $actual_human_height \
              --redis_ip $redis_ip \

@@ -4,6 +4,8 @@
 
 # bash to_onnx.sh $YOUR_POLICY_PATH
 
+export LD_LIBRARY_PATH=/home/kota-ueda/miniconda3/envs/twist2/lib:$LD_LIBRARY_PATH
+
 ckpt_path=$1
 
 cd legged_gym/legged_gym/scripts
